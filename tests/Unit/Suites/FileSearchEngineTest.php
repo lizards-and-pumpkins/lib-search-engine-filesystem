@@ -2,7 +2,7 @@
 
 namespace LizardsAndPumpkins\DataPool\SearchEngine\Filesystem;
 
-use LizardsAndPumpkins\DataPool\AbstractSearchEngineTest;
+use LizardsAndPumpkins\DataPool\SearchEngine\AbstractSearchEngineTest;
 use LizardsAndPumpkins\DataPool\SearchEngine\Exception\SearchEngineNotAvailableException;
 use LizardsAndPumpkins\DataPool\SearchEngine\FacetFieldTransformation\FacetFieldTransformationRegistry;
 use LizardsAndPumpkins\DataPool\SearchEngine\SearchCriteria\SearchCriteria;
