@@ -58,7 +58,7 @@ class FileSearchEngineTest extends AbstractSearchEngineTest
         $this->prepareTemporaryStorage();
 
         /** @var SearchCriteria|\PHPUnit_Framework_MockObject_MockObject $stubGlobalProductListingCriteria */
-        $stubGlobalProductListingCriteria = $this->getMock(SearchCriteria::class);
+        $stubGlobalProductListingCriteria = $this->createMock(SearchCriteria::class);
         $stubGlobalProductListingCriteria->method('matches')->willReturn(true);
 
         $searchCriteriaBuilder = new SearchCriteriaBuilder(
@@ -98,10 +98,10 @@ class FileSearchEngineTest extends AbstractSearchEngineTest
         $this->expectException(SearchEngineNotAvailableException::class);
 
         /** @var FacetFieldTransformationRegistry|MockObject $stubFacetFieldTransformationRegistry */
-        $stubFacetFieldTransformationRegistry = $this->getMock(FacetFieldTransformationRegistry::class);
+        $stubFacetFieldTransformationRegistry = $this->createMock(FacetFieldTransformationRegistry::class);
 
         /** @var SearchCriteria|\PHPUnit_Framework_MockObject_MockObject $stubGlobalProductListingCriteria */
-        $stubGlobalProductListingCriteria = $this->getMock(SearchCriteria::class);
+        $stubGlobalProductListingCriteria = $this->createMock(SearchCriteria::class);
 
         $searchCriteriaBuilder = new SearchCriteriaBuilder(
             $stubFacetFieldTransformationRegistry,

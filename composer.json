@@ -21,7 +21,7 @@
         "lizards-and-pumpkins/catalog": "^0.9.0-alpha"
     },
     "require-dev": {
-        "phpunit/phpunit": "5.3.*",
+        "phpunit/phpunit": "5.4.*",
         "lizards-and-pumpkins/coding-standards": "dev-master"
     },
     "autoload" : {
