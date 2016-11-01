@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LizardsAndPumpkins\DataPool\SearchEngine\Filesystem;
 
 use LizardsAndPumpkins\DataPool\SearchEngine\AbstractSearchEngineTest;
@@ -7,6 +9,7 @@ use LizardsAndPumpkins\DataPool\SearchEngine\Exception\SearchEngineNotAvailableE
 use LizardsAndPumpkins\DataPool\SearchEngine\FacetFieldTransformation\FacetFieldTransformationRegistry;
 use LizardsAndPumpkins\DataPool\SearchEngine\SearchCriteria\SearchCriteria;
 use LizardsAndPumpkins\DataPool\SearchEngine\SearchCriteria\SearchCriteriaBuilder;
+use LizardsAndPumpkins\DataPool\SearchEngine\SearchEngine;
 use LizardsAndPumpkins\Util\FileSystem\LocalFilesystem;
 use \PHPUnit_Framework_MockObject_MockObject as MockObject;
 
@@ -49,12 +52,9 @@ class FileSearchEngineTest extends AbstractSearchEngineTest
      */
     private $temporaryStorage;
 
-    /**
-     * {@inheritdoc}
-     */
     final protected function createSearchEngineInstance(
         FacetFieldTransformationRegistry $facetFieldTransformationRegistry
-    ) {
+    ) : SearchEngine {
         $this->prepareTemporaryStorage();
 
         /** @var SearchCriteria|\PHPUnit_Framework_MockObject_MockObject $stubGlobalProductListingCriteria */
@@ -91,6 +91,33 @@ class FileSearchEngineTest extends AbstractSearchEngineTest
     protected function tearDown()
     {
         (new LocalFilesystem())->removeDirectoryAndItsContent($this->temporaryStorage);
+    }
+
+    public function testExceptionIsThrownIfSearchEngineStorageDirIsNotAString()
+    {
+        $this->expectException(\TypeError::class);
+
+        $invalidStoragePath = [];
+
+        /** @var FacetFieldTransformationRegistry|MockObject $stubFacetFieldTransformationRegistry */
+        $stubFacetFieldTransformationRegistry = $this->createMock(FacetFieldTransformationRegistry::class);
+
+        /** @var SearchCriteria|\PHPUnit_Framework_MockObject_MockObject $stubGlobalProductListingCriteria */
+        $stubGlobalProductListingCriteria = $this->createMock(SearchCriteria::class);
+
+        $searchCriteriaBuilder = new SearchCriteriaBuilder(
+            $stubFacetFieldTransformationRegistry,
+            $stubGlobalProductListingCriteria
+        );
+
+        $testSearchableFields = [];
+
+        FileSearchEngine::create(
+            $invalidStoragePath,
+            $testSearchableFields,
+            $searchCriteriaBuilder,
+            $stubFacetFieldTransformationRegistry
+        );
     }
 
     public function testExceptionIsThrownIfSearchEngineStorageDirIsNotWritable()

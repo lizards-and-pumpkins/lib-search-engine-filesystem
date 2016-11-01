@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LizardsAndPumpkins\DataPool\SearchEngine\Filesystem;
 
 use LizardsAndPumpkins\Context\DataVersion\DataVersion;
@@ -48,7 +50,7 @@ class FileSearchEngine extends IntegrationTestSearchEngineAbstract
      * @param FacetFieldTransformationRegistry $facetFieldTransformationRegistry
      */
     private function __construct(
-        $storagePath,
+        string $storagePath,
         array $searchableFields,
         SearchCriteriaBuilder $searchCriteriaBuilder,
         FacetFieldTransformationRegistry $facetFieldTransformationRegistry
@@ -67,7 +69,7 @@ class FileSearchEngine extends IntegrationTestSearchEngineAbstract
      * @return FileSearchEngine
      */
     public static function create(
-        $storagePath,
+        string $storagePath,
         array $searchableFields,
         SearchCriteriaBuilder $searchCriteriaBuilder,
         FacetFieldTransformationRegistry $facetFieldTransformationRegistry
@@ -95,7 +97,7 @@ class FileSearchEngine extends IntegrationTestSearchEngineAbstract
     /**
      * @return SearchDocument[]
      */
-    final protected function getSearchDocuments()
+    final protected function getSearchDocuments() : array
     {
         $searchDocuments = [];
 
@@ -119,7 +121,7 @@ class FileSearchEngine extends IntegrationTestSearchEngineAbstract
      * @param SearchDocument $searchDocument
      * @return mixed[]
      */
-    private function getArrayRepresentationOfSearchDocument(SearchDocument $searchDocument)
+    private function getArrayRepresentationOfSearchDocument(SearchDocument $searchDocument) : array
     {
         return [
             self::PRODUCT_ID => (string) $searchDocument->getProductId(),
@@ -132,15 +134,14 @@ class FileSearchEngine extends IntegrationTestSearchEngineAbstract
      * @param SearchDocumentFieldCollection $searchDocumentFieldCollection
      * @return string[]
      */
-    private function getSearchDocumentFieldsAsArray(SearchDocumentFieldCollection $searchDocumentFieldCollection)
-    {
-        return array_reduce(
-            $searchDocumentFieldCollection->getFields(),
-            function ($searchDocumentFieldsArray, SearchDocumentField $field) {
-                $searchDocumentFieldsArray[$field->getKey()] = $field->getValues();
-                return $searchDocumentFieldsArray;
-            }
-        );
+    private function getSearchDocumentFieldsAsArray(
+        SearchDocumentFieldCollection $searchDocumentFieldCollection
+    ) : array {
+        $searchDocumentFields = $searchDocumentFieldCollection->getFields();
+        return array_reduce($searchDocumentFields, function ($searchDocumentFieldsArray, SearchDocumentField $field) {
+            $searchDocumentFieldsArray[$field->getKey()] = $field->getValues();
+            return $searchDocumentFieldsArray;
+        });
     }
 
     /**
@@ -155,11 +156,7 @@ class FileSearchEngine extends IntegrationTestSearchEngineAbstract
         }, []);
     }
 
-    /**
-     * @param string $json
-     * @return SearchDocument
-     */
-    private function createSearchDocumentFormJson($json)
+    private function createSearchDocumentFormJson(string $json) : SearchDocument
     {
         $searchDocumentArrayRepresentation = json_decode($json, true);
 
@@ -167,7 +164,7 @@ class FileSearchEngine extends IntegrationTestSearchEngineAbstract
         $searchDocumentFields = SearchDocumentFieldCollection::fromArray(
             $searchDocumentArrayRepresentation[self::FIELDS]
         );
-        $productId = ProductId::fromString($searchDocumentArrayRepresentation[self::PRODUCT_ID]);
+        $productId = new ProductId($searchDocumentArrayRepresentation[self::PRODUCT_ID]);
 
         return new SearchDocument($searchDocumentFields, $context, $productId);
     }
@@ -176,7 +173,7 @@ class FileSearchEngine extends IntegrationTestSearchEngineAbstract
      * @param string[] $contextDataSet
      * @return Context
      */
-    private function createContextFromDataSet($contextDataSet)
+    private function createContextFromDataSet(array $contextDataSet) : Context
     {
         $contextDataSet[DataVersion::CONTEXT_CODE] = '-1';
         return SelfContainedContextBuilder::rehydrateContext($contextDataSet);
@@ -187,18 +184,12 @@ class FileSearchEngine extends IntegrationTestSearchEngineAbstract
         (new LocalFilesystem())->removeDirectoryContents($this->storagePath);
     }
 
-    /**
-     * @return SearchCriteriaBuilder
-     */
-    final protected function getSearchCriteriaBuilder()
+    final protected function getSearchCriteriaBuilder() : SearchCriteriaBuilder
     {
         return $this->searchCriteriaBuilder;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    final protected function getFacetFieldTransformationRegistry()
+    final protected function getFacetFieldTransformationRegistry() : FacetFieldTransformationRegistry
     {
         return $this->facetFieldTransformationRegistry;
     }
@@ -206,7 +197,7 @@ class FileSearchEngine extends IntegrationTestSearchEngineAbstract
     /**
      * @return string[]
      */
-    final protected function getSearchableFields()
+    final protected function getSearchableFields() : array
     {
         return $this->searchableFields;
     }
