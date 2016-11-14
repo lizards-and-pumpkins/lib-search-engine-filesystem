@@ -9,6 +9,7 @@ use LizardsAndPumpkins\DataPool\SearchEngine\Exception\SearchEngineNotAvailableE
 use LizardsAndPumpkins\DataPool\SearchEngine\FacetFieldTransformation\FacetFieldTransformationRegistry;
 use LizardsAndPumpkins\Context\Context;
 use LizardsAndPumpkins\Context\SelfContainedContextBuilder;
+use LizardsAndPumpkins\DataPool\SearchEngine\Filesystem\Exception\SearchDocumentCanNotBeStoredException;
 use LizardsAndPumpkins\DataPool\SearchEngine\IntegrationTestSearchEngineAbstract;
 use LizardsAndPumpkins\DataPool\SearchEngine\SearchCriteria\SearchCriteriaBuilder;
 use LizardsAndPumpkins\DataPool\SearchEngine\SearchDocument\SearchDocument;
@@ -91,7 +92,11 @@ class FileSearchEngine extends IntegrationTestSearchEngineAbstract
         $searchDocumentArrayRepresentation = $this->getArrayRepresentationOfSearchDocument($searchDocument);
         $searchDocumentJson = json_encode($searchDocumentArrayRepresentation, JSON_PRETTY_PRINT);
 
-        file_put_contents($searchDocumentFilePath, $searchDocumentJson);
+        if (false === file_put_contents($searchDocumentFilePath, $searchDocumentJson)) {
+            throw new SearchDocumentCanNotBeStoredException(
+                'Search document can not be stored. Disk full? Permissions are wrong?'
+            );
+        }
     }
 
     /**
@@ -141,7 +146,7 @@ class FileSearchEngine extends IntegrationTestSearchEngineAbstract
         return array_reduce($searchDocumentFields, function ($searchDocumentFieldsArray, SearchDocumentField $field) {
             $searchDocumentFieldsArray[$field->getKey()] = $field->getValues();
             return $searchDocumentFieldsArray;
-        });
+        }, []);
     }
 
     /**

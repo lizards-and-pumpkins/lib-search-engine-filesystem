@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace LizardsAndPumpkins\DataPool\SearchEngine\Filesystem;
 
+use LizardsAndPumpkins\Context\SelfContainedContext;
 use LizardsAndPumpkins\DataPool\SearchEngine\AbstractSearchEngineTest;
 use LizardsAndPumpkins\DataPool\SearchEngine\Exception\SearchEngineNotAvailableException;
 use LizardsAndPumpkins\DataPool\SearchEngine\FacetFieldTransformation\FacetFieldTransformationRegistry;
+use LizardsAndPumpkins\DataPool\SearchEngine\Filesystem\Exception\SearchDocumentCanNotBeStoredException;
 use LizardsAndPumpkins\DataPool\SearchEngine\SearchCriteria\SearchCriteria;
 use LizardsAndPumpkins\DataPool\SearchEngine\SearchCriteria\SearchCriteriaBuilder;
+use LizardsAndPumpkins\DataPool\SearchEngine\SearchDocument\SearchDocument;
+use LizardsAndPumpkins\DataPool\SearchEngine\SearchDocument\SearchDocumentFieldCollection;
 use LizardsAndPumpkins\DataPool\SearchEngine\SearchEngine;
+use LizardsAndPumpkins\Import\Product\ProductId;
 use LizardsAndPumpkins\Util\FileSystem\LocalFilesystem;
 use \PHPUnit_Framework_MockObject_MockObject as MockObject;
 
@@ -52,6 +57,16 @@ class FileSearchEngineTest extends AbstractSearchEngineTest
      */
     private $temporaryStorage;
 
+    /**
+     * @var bool
+     */
+    private static $diskIsFull;
+
+    public static function isDiskFull() : bool
+    {
+        return self::$diskIsFull;
+    }
+
     final protected function createSearchEngineInstance(
         FacetFieldTransformationRegistry $facetFieldTransformationRegistry
     ) : SearchEngine {
@@ -74,6 +89,12 @@ class FileSearchEngineTest extends AbstractSearchEngineTest
             $searchCriteriaBuilder,
             $facetFieldTransformationRegistry
         );
+    }
+
+    protected function setUp()
+    {
+        self::$diskIsFull = false;
+        parent::setUp();
     }
 
     private function prepareTemporaryStorage()
@@ -144,4 +165,40 @@ class FileSearchEngineTest extends AbstractSearchEngineTest
             $stubFacetFieldTransformationRegistry
         );
     }
+
+    public function testExceptionIsThrownIfMessageCouldNotBeWritten()
+    {
+        self::$diskIsFull = true;
+
+        $this->expectException(SearchDocumentCanNotBeStoredException::class);
+
+        /** @var FacetFieldTransformationRegistry|MockObject $stubFacetFieldTransformationRegistry */
+        $stubFacetFieldTransformationRegistry = $this->createMock(FacetFieldTransformationRegistry::class);
+
+        $searchEngine = $this->createSearchEngineInstance($stubFacetFieldTransformationRegistry);
+
+        $testSearchDocument = new SearchDocument(
+            SearchDocumentFieldCollection::fromArray([]),
+            new SelfContainedContext([]),
+            new ProductId('foo'))
+        ;
+
+        $searchEngine->addDocument($testSearchDocument);
+    }
+}
+
+/**
+ * @param string $filename
+ * @param mixed $data
+ * @param int $flags
+ * @param resource|null $context
+ * @return int|bool
+ */
+function file_put_contents(string $filename, $data, int $flags = 0, $context = null)
+{
+    if (FileSearchEngineTest::isDiskFull()) {
+        return false;
+    }
+
+    return \file_put_contents($filename, $data, $flags, $context);
 }
