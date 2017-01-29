@@ -10,8 +10,7 @@ use LizardsAndPumpkins\DataPool\SearchEngine\FacetFieldTransformation\FacetField
 use LizardsAndPumpkins\Context\Context;
 use LizardsAndPumpkins\Context\SelfContainedContextBuilder;
 use LizardsAndPumpkins\DataPool\SearchEngine\Filesystem\Exception\SearchDocumentCanNotBeStoredException;
-use LizardsAndPumpkins\DataPool\SearchEngine\IntegrationTestSearchEngineAbstract;
-use LizardsAndPumpkins\DataPool\SearchEngine\SearchCriteria\SearchCriteriaBuilder;
+use LizardsAndPumpkins\DataPool\SearchEngine\IntegrationTest\IntegrationTestSearchEngineAbstract;
 use LizardsAndPumpkins\DataPool\SearchEngine\SearchDocument\SearchDocument;
 use LizardsAndPumpkins\DataPool\SearchEngine\SearchDocument\SearchDocumentField;
 use LizardsAndPumpkins\DataPool\SearchEngine\SearchDocument\SearchDocumentFieldCollection;
@@ -35,11 +34,6 @@ class FileSearchEngine extends IntegrationTestSearchEngineAbstract
     private $searchableFields;
 
     /**
-     * @var SearchCriteriaBuilder
-     */
-    private $searchCriteriaBuilder;
-
-    /**
      * @var FacetFieldTransformationRegistry
      */
     private $facetFieldTransformationRegistry;
@@ -47,32 +41,27 @@ class FileSearchEngine extends IntegrationTestSearchEngineAbstract
     /**
      * @param string $storagePath
      * @param string[] $searchableFields
-     * @param SearchCriteriaBuilder $searchCriteriaBuilder
      * @param FacetFieldTransformationRegistry $facetFieldTransformationRegistry
      */
     private function __construct(
         string $storagePath,
         array $searchableFields,
-        SearchCriteriaBuilder $searchCriteriaBuilder,
         FacetFieldTransformationRegistry $facetFieldTransformationRegistry
     ) {
         $this->storagePath = $storagePath;
         $this->searchableFields = $searchableFields;
-        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->facetFieldTransformationRegistry = $facetFieldTransformationRegistry;
     }
 
     /**
      * @param string $storagePath
      * @param string[] $searchableFields
-     * @param SearchCriteriaBuilder $searchCriteriaBuilder
      * @param FacetFieldTransformationRegistry $facetFieldTransformationRegistry
      * @return FileSearchEngine
      */
     public static function create(
         string $storagePath,
         array $searchableFields,
-        SearchCriteriaBuilder $searchCriteriaBuilder,
         FacetFieldTransformationRegistry $facetFieldTransformationRegistry
     ) {
         if (!is_writable($storagePath)) {
@@ -82,7 +71,7 @@ class FileSearchEngine extends IntegrationTestSearchEngineAbstract
             ));
         }
 
-        return new self($storagePath, $searchableFields, $searchCriteriaBuilder, $facetFieldTransformationRegistry);
+        return new self($storagePath, $searchableFields, $facetFieldTransformationRegistry);
     }
 
     public function addDocument(SearchDocument $searchDocument)
@@ -187,11 +176,6 @@ class FileSearchEngine extends IntegrationTestSearchEngineAbstract
     public function clear()
     {
         (new LocalFilesystem())->removeDirectoryContents($this->storagePath);
-    }
-
-    final protected function getSearchCriteriaBuilder() : SearchCriteriaBuilder
-    {
-        return $this->searchCriteriaBuilder;
     }
 
     final protected function getFacetFieldTransformationRegistry() : FacetFieldTransformationRegistry

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace LizardsAndPumpkins\DataPool\SearchEngine\Filesystem;
 
 use LizardsAndPumpkins\Context\SelfContainedContext;
-use LizardsAndPumpkins\DataPool\SearchEngine\AbstractSearchEngineTest;
 use LizardsAndPumpkins\DataPool\SearchEngine\Exception\SearchEngineNotAvailableException;
 use LizardsAndPumpkins\DataPool\SearchEngine\FacetFieldTransformation\FacetFieldTransformationRegistry;
 use LizardsAndPumpkins\DataPool\SearchEngine\Filesystem\Exception\SearchDocumentCanNotBeStoredException;
+use LizardsAndPumpkins\DataPool\SearchEngine\IntegrationTest\AbstractSearchEngineTest;
 use LizardsAndPumpkins\DataPool\SearchEngine\SearchCriteria\SearchCriteria;
 use LizardsAndPumpkins\DataPool\SearchEngine\SearchCriteria\SearchCriteriaBuilder;
 use LizardsAndPumpkins\DataPool\SearchEngine\SearchDocument\SearchDocument;
@@ -72,21 +72,11 @@ class FileSearchEngineTest extends AbstractSearchEngineTest
     ) : SearchEngine {
         $this->prepareTemporaryStorage();
 
-        /** @var SearchCriteria|\PHPUnit_Framework_MockObject_MockObject $stubGlobalProductListingCriteria */
-        $stubGlobalProductListingCriteria = $this->createMock(SearchCriteria::class);
-        $stubGlobalProductListingCriteria->method('matches')->willReturn(true);
-
-        $searchCriteriaBuilder = new SearchCriteriaBuilder(
-            $facetFieldTransformationRegistry,
-            $stubGlobalProductListingCriteria
-        );
-
         $testSearchableFields = ['baz'];
 
         return FileSearchEngine::create(
             $this->temporaryStorage,
             $testSearchableFields,
-            $searchCriteriaBuilder,
             $facetFieldTransformationRegistry
         );
     }
@@ -123,22 +113,9 @@ class FileSearchEngineTest extends AbstractSearchEngineTest
         /** @var FacetFieldTransformationRegistry|MockObject $stubFacetFieldTransformationRegistry */
         $stubFacetFieldTransformationRegistry = $this->createMock(FacetFieldTransformationRegistry::class);
 
-        /** @var SearchCriteria|\PHPUnit_Framework_MockObject_MockObject $stubGlobalProductListingCriteria */
-        $stubGlobalProductListingCriteria = $this->createMock(SearchCriteria::class);
-
-        $searchCriteriaBuilder = new SearchCriteriaBuilder(
-            $stubFacetFieldTransformationRegistry,
-            $stubGlobalProductListingCriteria
-        );
-
         $testSearchableFields = [];
 
-        FileSearchEngine::create(
-            $invalidStoragePath,
-            $testSearchableFields,
-            $searchCriteriaBuilder,
-            $stubFacetFieldTransformationRegistry
-        );
+        FileSearchEngine::create($invalidStoragePath, $testSearchableFields, $stubFacetFieldTransformationRegistry);
     }
 
     public function testExceptionIsThrownIfSearchEngineStorageDirIsNotWritable()
@@ -148,22 +125,9 @@ class FileSearchEngineTest extends AbstractSearchEngineTest
         /** @var FacetFieldTransformationRegistry|MockObject $stubFacetFieldTransformationRegistry */
         $stubFacetFieldTransformationRegistry = $this->createMock(FacetFieldTransformationRegistry::class);
 
-        /** @var SearchCriteria|\PHPUnit_Framework_MockObject_MockObject $stubGlobalProductListingCriteria */
-        $stubGlobalProductListingCriteria = $this->createMock(SearchCriteria::class);
-
-        $searchCriteriaBuilder = new SearchCriteriaBuilder(
-            $stubFacetFieldTransformationRegistry,
-            $stubGlobalProductListingCriteria
-        );
-
         $testSearchableFields = [];
 
-        FileSearchEngine::create(
-            'non-existing-path',
-            $testSearchableFields,
-            $searchCriteriaBuilder,
-            $stubFacetFieldTransformationRegistry
-        );
+        FileSearchEngine::create('non-existing-path', $testSearchableFields, $stubFacetFieldTransformationRegistry);
     }
 
     public function testExceptionIsThrownIfMessageCouldNotBeWritten()
